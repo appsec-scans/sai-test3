@@ -1,0 +1,36 @@
+name: Checkmarx CxOne Scan with SARIF Upload
+
+on:
+  push:            # Trigger on push to any branch
+  pull_request:    # Trigger on PR open/sync to any branch
+    types: [opened, reopened, synchronize]
+
+jobs:
+  checkmarx-scan:
+    name: Run CxOne Scan and Upload SARIF
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Debug Project Info
+        run: |
+          echo "Repo Name: ${{ github.event.repository.name }}"
+          echo "Branch: ${{ github.ref_name }}"
+
+      - name: Run Checkmarx Scan (with SARIF Output)
+        uses: checkmarx/ast-github-action@2.0.23
+        with:
+          base_uri: https://ast.checkmarx.net
+          cx_tenant: ${{ secrets.CX_TENANT }}
+          cx_client_id: ${{ secrets.CX_CLIENT_ID }}
+          cx_client_secret: ${{ secrets.CX_CLIENT_SECRET }}
+          project_name: ${{ github.event.repository.name }}
+          branch: ${{ github.ref_name }}
+          additional_params: --report-format sarif --output-path .
+
+      - name: Upload SARIF to GitHub Security Tab
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: cx_result.sarif
