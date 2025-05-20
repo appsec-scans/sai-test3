@@ -1,9 +1,13 @@
 name: Checkmarx CxOne Scan with SARIF Upload
 
 on:
-  push:            # Trigger on push to any branch
-  pull_request:    # Trigger on PR open/sync to any branch
+  push:
+  pull_request:
     types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+  security-events: write   # REQUIRED for uploading SARIF results
 
 jobs:
   checkmarx-scan:
@@ -31,6 +35,6 @@ jobs:
           additional_params: --report-format sarif --output-path .
 
       - name: Upload SARIF to GitHub Security Tab
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: cx_result.sarif
