@@ -7,23 +7,24 @@ on:
 
 permissions:
   contents: read
-  security-events: write   # REQUIRED for uploading SARIF results
+  security-events: write  # REQUIRED for SARIF uploads
+  actions: read
 
 jobs:
   checkmarx-scan:
-    name: Run CxOne Scan and Upload SARIF
+    name: Run Checkmarx Scan + Upload SARIF
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Debug Project Info
+      - name: Debug Info
         run: |
-          echo "Repo Name: ${{ github.event.repository.name }}"
+          echo "Repo: ${{ github.repository }}"
           echo "Branch: ${{ github.ref_name }}"
 
-      - name: Run Checkmarx Scan (with SARIF Output)
+      - name: Run Checkmarx Scan
         uses: checkmarx/ast-github-action@2.0.23
         with:
           base_uri: https://ast.checkmarx.net
@@ -35,6 +36,6 @@ jobs:
           additional_params: --report-format sarif --output-path .
 
       - name: Upload SARIF to GitHub Security Tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: cx_result.sarif
